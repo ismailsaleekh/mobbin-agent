@@ -1,0 +1,7 @@
+{
+  "mobbin": {
+    "command": "node",
+    "args": ["dist/index.js"],
+    "cwd": "/Users/lizavasilyeva/work/stroy-mart/mobbin-agent"
+  }
+}
