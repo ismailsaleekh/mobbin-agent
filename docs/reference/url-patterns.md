@@ -117,7 +117,7 @@ Selectors used by `mobbin_extract` and collection scripts:
 
 | Target | Selector | Filter |
 |--------|----------|--------|
-| Screen links | `a[href*="/screens/"]` | Regex: `/\/screens\/[a-f0-9-]{20,}/` |
+| Screen links | `a[href*="/screens/"]` | Regex: `/\/screens\/[a-f0-9-]{36}/` (UUID v4). Scripts may use `{20,}` for lenient matching. |
 | Screen images | `img[src*="bytescale"]` | Within screen link elements |
 | Design images | `img[src]` | Width >100px, from CDN domains (`bytescale`, `upcdn.io`, `mobbin`, `cdn`) |
 
