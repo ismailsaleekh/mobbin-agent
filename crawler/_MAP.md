@@ -25,8 +25,8 @@ data/corpus/                                      Output (gitignored)
 |------|---------|--------|
 | `_CONTEXT.md` | Crawler overview, architecture, metadata schema, error handling | Complete |
 | `_MAP.md` | This file — navigation guide | Complete |
-| `systematic-crawler.mjs` | Main script: crawl plan generation, scroll+extract loop, download, dedup, checkpoint | To build |
-| `catalogs.mjs` | All 72 categories with display names, URL-encoded values, and content type mapping | To build |
+| `systematic-crawler.mjs` | Main script: crawl plan generation, scroll+extract loop, download, dedup, checkpoint | Complete |
+| `catalogs.mjs` | All 114 categories (99 screen patterns + 8 flows + 7 UI elements) with URL-encoded values | Complete |
 
 ## Quick Reference
 

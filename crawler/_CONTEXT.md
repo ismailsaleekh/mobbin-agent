@@ -33,23 +33,23 @@ systematic-crawler.mjs
 
 | Metric | Value |
 |--------|-------|
-| Category pages to crawl | 288 |
-| Screen patterns | 57 |
+| Category pages to crawl | 456 |
+| Screen patterns | 99 |
 | Flow actions | 8 |
 | UI element types | 7 |
 | Platforms | 2 (mobile/iOS, web) |
 | Sort orders | 2 (trending, mostPopular) |
 | Estimated unique items | 10,000-20,000 |
-| Estimated runtime | 3-4 hours (single browser instance) |
+| Estimated runtime | 4-6 hours (single browser instance) |
 | Estimated storage | 10-45 GB |
 
 ## Content Matrix
 
 ```
-SCREENS:   57 patterns × 2 platforms × 2 sorts = 228 pages
+SCREENS:   99 patterns × 2 platforms × 2 sorts = 396 pages
 FLOWS:      8 actions  × 2 platforms × 2 sorts =  32 pages
 UI-ELEMS:   7 elements × 2 platforms × 2 sorts =  28 pages
-                                          TOTAL = 288 pages
+                                          TOTAL = 456 pages
 ```
 
 ## Output Structure
