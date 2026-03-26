@@ -73,6 +73,18 @@ function toFullRes(thumbnailUrl) {
   return thumbnailUrl.split('?')[0] + CONFIG.FULL_RES_PARAMS;
 }
 
+function toAppSlug(alt) {
+  return (alt || 'unknown')
+    .replace(/ screen$/i, '')
+    .replace(/ mobile$/i, '')
+    .replace(/ web$/i, '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    || 'unknown';
+}
+
 // ---------------------------------------------------------------------------
 // Crawl plan generation
 // ---------------------------------------------------------------------------
@@ -317,7 +329,9 @@ async function crawlCategory(browser, entry, state) {
 
   // Download each new item
   for (const [uuid, item] of uniqueNew) {
-    const filePath = path.join(outDir, `${uuid}.png`);
+    const appSlug = toAppSlug(item.alt);
+    const fileName = `${appSlug}-${uuid}.png`;
+    const filePath = path.join(outDir, fileName);
     const relPath = path.relative(CORPUS_DIR, filePath);
 
     // Skip if file already exists on disk (partial previous run)

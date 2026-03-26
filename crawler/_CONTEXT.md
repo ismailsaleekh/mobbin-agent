@@ -62,22 +62,22 @@ data/corpus/                              (gitignored — runtime output)
 │
 ├── screens/
 │   ├── mobile/
-│   │   ├── dashboard/{uuid}.png
-│   │   ├── home/{uuid}.png
+│   │   ├── dashboard/{appslug}-{uuid}.png
+│   │   ├── home/{appslug}-{uuid}.png
 │   │   └── ...57 pattern directories
 │   └── web/
 │       └── ...57 pattern directories
 │
 ├── flows/
 │   ├── mobile/
-│   │   ├── onboarding/{uuid}.png
+│   │   ├── onboarding/{appslug}-{uuid}.png
 │   │   └── ...8 action directories
 │   └── web/
 │       └── ...8 action directories
 │
 └── ui-elements/
     ├── mobile/
-    │   ├── button/{uuid}.png
+    │   ├── button/{appslug}-{uuid}.png
     │   └── ...7 element directories
     └── web/
         └── ...7 element directories
