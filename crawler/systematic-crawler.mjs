@@ -8,10 +8,13 @@
 // Usage:
 //   cd mobbin-agent
 //   npm run build
-//   node crawler/systematic-crawler.mjs
+//   node crawler/systematic-crawler.mjs              # first run or resume
+//   node crawler/systematic-crawler.mjs --deep       # re-crawl all categories with exhaustive scrolling
 //
-// Resume after interruption:
-//   node crawler/systematic-crawler.mjs   (reads checkpoint automatically)
+// The script scrolls each category page until 3 consecutive scrolls yield
+// 0 new items — no fixed scroll limit. Existing screenshots are never
+// re-downloaded (global UUID dedup). Use --deep to re-visit all categories
+// after a previous run to capture deeper content.
 
 import fs from 'fs';
 import path from 'path';
@@ -22,7 +25,7 @@ import { SCREEN_PATTERNS, FLOW_ACTIONS, UI_ELEMENTS, PLATFORMS, SORT_ORDERS } fr
 // ---------------------------------------------------------------------------
 
 const CONFIG = {
-  MAX_SCROLLS: 10,
+  EMPTY_SCROLL_LIMIT: 3,     // stop scrolling after N consecutive scrolls with 0 new items
   SCROLL_AMOUNT: 1500,
   SCROLL_DELAY_MS: 2500,
   DOWNLOAD_DELAY_MS: 500,
@@ -259,7 +262,7 @@ async function extractPageItems(page, contentType) {
 
 async function crawlCategory(browser, entry, state) {
   const url = buildSearchUrl(entry);
-  const result = { newItems: 0, dupes: 0, errors: 0, skipped: false };
+  const result = { newItems: 0, dupes: 0, errors: 0, scrolls: 0, skipped: false };
 
   // Navigate
   try {
@@ -283,15 +286,21 @@ async function crawlCategory(browser, entry, state) {
   } catch { /* popup may not exist */ }
   await delay(CONFIG.POPUP_DELAY_MS);
 
-  // Scroll and collect items
+  // Scroll until no new items appear (3 consecutive empty scrolls = page exhausted)
   const newItems = [];
+  const seenThisPage = new Set();
+  let emptyScrolls = 0;
+  let scrollCount = 0;
 
-  for (let scroll = 0; scroll < CONFIG.MAX_SCROLLS; scroll++) {
+  while (emptyScrolls < CONFIG.EMPTY_SCROLL_LIMIT) {
     const items = await extractPageItems(page, entry.contentType);
+    let newThisScroll = 0;
 
     for (const item of items) {
       const uuid = extractUuid(item.itemUrl);
       if (!uuid) continue;
+      if (seenThisPage.has(uuid)) continue;
+      seenThisPage.add(uuid);
 
       if (state.index.has(uuid)) {
         // Duplicate — extend foundIn
@@ -304,12 +313,23 @@ async function crawlCategory(browser, entry, state) {
         // New item — queue for download
         newItems.push({ ...item, uuid });
       }
+      newThisScroll++;
     }
+
+    if (newThisScroll === 0) {
+      emptyScrolls++;
+    } else {
+      emptyScrolls = 0;
+    }
+
+    scrollCount++;
 
     // Scroll down
     await browser.scroll({ direction: 'down', amount: CONFIG.SCROLL_AMOUNT });
     await delay(CONFIG.SCROLL_DELAY_MS);
   }
+
+  result.scrolls = scrollCount;
 
   // Deduplicate items discovered within this category (same UUID from multiple scroll positions)
   const uniqueNew = new Map();
@@ -429,15 +449,24 @@ function delay(ms) {
 // ---------------------------------------------------------------------------
 
 async function main() {
+  const deepMode = process.argv.includes('--deep');
   const plan = generateCrawlPlan();
   const state = loadState();
+
+  if (deepMode && state.completed.size > 0) {
+    log(`Deep mode: clearing ${state.completed.size} completed categories (index preserved: ${state.index.size} items)`);
+    state.completed.clear();
+  }
+
   const remaining = plan.filter(e => !state.completed.has(e.categoryKey));
 
   log(`Systematic crawl — ${plan.length} total categories, ${remaining.length} remaining`);
   log(`Index: ${state.index.size} items | Downloaded: ${state.totalDownloaded} | Dupes: ${state.totalDuplicates}`);
+  if (deepMode) log('Mode: DEEP — scrolling until page exhausted (no fixed limit)');
 
   if (remaining.length === 0) {
     log('All categories already complete. Nothing to do.');
+    log('Use --deep to re-crawl all categories with exhaustive scrolling.');
     saveStats(state, plan, 0);
     return;
   }
@@ -465,7 +494,7 @@ async function main() {
         state.completed.add(entry.categoryKey);
         categoriesDone++;
 
-        log(`  ${result.newItems} new, ${result.dupes} dupes, ${result.errors} errors — total: ${state.index.size} items`);
+        log(`  ${result.newItems} new, ${result.dupes} dupes, ${result.errors} errors, ${result.scrolls} scrolls — total: ${state.index.size} items`);
 
         // Save state after every category
         saveState(state, plan.length);
