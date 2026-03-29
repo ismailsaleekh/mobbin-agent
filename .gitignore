@@ -3,3 +3,5 @@ dist/
 data/session/
 data/downloads/
 data/corpus/
+data/crawl.log
+data/crawl.pid
